@@ -1,0 +1,564 @@
+<!doctype html>
+<!--
+  s3_portal — REVEAL + PROOF + PAYOFF (abs 8–34 s · local 0–26 s e segs)
+  Uma janela única do painel (address bar «cftec.vercel.app/admin») leva o
+  espectador pelos beats: título → KPIs reais → navegação com cursor → Kanban
+  com 2 arrastes do cartão real (CFTEC Flow · Nexora Systems) → documento
+  Proforma → tabela → Relatórios & Metas (barra ilustrativa etiquetada) →
+  push real de chamado em telemóvel.
+  Dados reais lidos da base: pedidos, KPIs, meta 2.500.000 Kz, IBAN, chamado resolvido.
+  Preço de catálogo em produção: 0 → o documento não mostra Total legível.
+-->
+<html
+  lang="pt"
+  data-composition-id="s3_portal"
+  data-composition-duration="26"
+>
+  <head><meta charset="UTF-8" /><title>s3_portal</title></head>
+  <body>
+    <template>
+      <style>
+        @font-face { font-family: 'Space Grotesk'; src: url('assets/fonts/SpaceGrotesk.woff2') format('woff2'); font-weight: 300 700; font-display: block; }
+        @font-face { font-family: 'InterLocal'; src: url('assets/fonts/Inter.woff2') format('woff2'); font-weight: 300 700; font-display: block; }
+
+        #root {
+          position: absolute; inset: 0; overflow: hidden;
+          background: #f8fafc;
+          font-family: 'InterLocal', Inter, system-ui, sans-serif;
+          color: #0f172a;
+        }
+
+        /* ===== janela do painel ===== */
+        #s3-win {
+          position: absolute; left: 50%; top: 50%;
+          width: 1580px; height: 986px;
+          margin-left: -790px; margin-top: -493px;
+          background: #ffffff; border-radius: 18px;
+          box-shadow: 0 30px 80px rgba(15,23,42,.20);
+          overflow: hidden; opacity: 0;
+        }
+        #s3-bar {
+          height: 54px; display: flex; align-items: center;
+          border-bottom: 1px solid #e2e8f0; background: #f8fafc;
+          padding: 0 20px; gap: 18px;
+        }
+        .s3-dot { width: 13px; height: 13px; border-radius: 50%; background: #cbd5e1; margin-right: 8px; }
+        #s3-url {
+          flex: 0 0 420px; height: 34px; margin: 0 auto; border-radius: 999px;
+          border: 1px solid #e2e8f0; background: #ffffff;
+          display: flex; align-items: center; padding: 0 18px;
+          color: #475569; font-family: 'Space Mono', monospace; font-size: 22px;
+        }
+        #s3-url b { font-weight: 400; color: #0f172a; }
+
+        /* ===== sidebar ===== */
+        #s3-side {
+          position: absolute; left: 0; top: 54px; bottom: 0; width: 286px;
+          background: #0f172a; padding: 18px 0 20px; overflow: hidden;
+        }
+        .brandrow { display: flex; align-items: center; gap: 12px; padding: 6px 20px 18px; }
+        .brandrow img { width: 36px; height: 36px; border-radius: 9px; }
+        .brandrow span { color: #f8fafc; font-weight: 700; font-size: 22px; font-family: 'Space Grotesk', sans-serif; }
+        .brandrow small { display: block; color: #7e8ba0; font-size: 16px; font-weight: 400; }
+        .s3-nav { position: relative; }
+        .s3-nav .slabel { color: #7a8aa2; font-size: 16px; letter-spacing: .14em; text-transform: uppercase; padding: 8px 20px 6px; }
+        .s3-item {
+          display: flex; align-items: center; gap: 10px; height: 46px;
+          padding: 0 12px; margin: 3px 10px; border-radius: 9px;
+          color: #94a3b8; font-size: 20px; white-space: nowrap;
+        }
+        .s3-item i { width: 15px; height: 15px; border-radius: 4px; background: currentColor; opacity: .85; flex: 0 0 15px; }
+        .s3-item.is-act { background: #112644; color: #00e5ff; }
+        .s3-item.is-come { background: #0b1930; color: #e2e8f0; }
+        #s3-item-pedidos { outline: 2px solid transparent; }
+        #s3-badge-p { position: absolute; }
+        .s3-badge {
+          margin-left: auto; min-width: 24px; height: 24px; padding: 0 6px;
+          border-radius: 999px; background: #00e5ff; color: #04263b;
+          font-size: 17px; font-weight: 700; line-height: 24px; text-align: center;
+          opacity: 0;
+        }
+        #s3-ajuda {
+          position: absolute; left: 14px; right: 14px; bottom: 18px;
+          background: #0b1930; border-radius: 12px; padding: 14px 16px;
+          color: #cbd5e1; font-size: 18px; line-height: 1.4;
+        }
+        #s3-ajuda b { color: #f8fafc; font-size: 19px; display: block; margin-bottom: 4px; }
+
+        /* ===== painéis de conteúdo ===== */
+        #s3-main { position: absolute; left: 286px; top: 54px; right: 0; bottom: 0; overflow: hidden; background: #ffffff; }
+        .s3-view { position: absolute; inset: 0; padding: 30px 34px; opacity: 0; overflow: hidden; }
+        .sv-kicker { font-size: 20px; letter-spacing: .16em; font-weight: 700; color: #4f46e5; text-transform: uppercase; }
+        .sv-h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 44px; margin: 4px 0 20px; }
+
+        /* KPI card */
+        .s3-kpis { display: flex; gap: 18px; }
+        .s3-kpi {
+          flex: 1; border-radius: 14px; border: 1px solid #e2e8f0;
+          background: #f8fafc; padding: 18px 20px 22px; position: relative; overflow: hidden;
+          opacity: 0;
+        }
+        .s3-kpi small { display: block; font-size: 23px; color: #64748b; margin-bottom: 6px; }
+        .s3-kpi strong { font-family: 'Space Grotesk', sans-serif; font-size: 66px; line-height: 1.05; color: #0f172a; }
+        .s3-kpi em { display: block; font-style: normal; font-size: 20px; color: #64748b; margin-top: 2px; }
+        .s3-kpi .s3-kico { position: absolute; right: 18px; top: 18px; width: 42px; height: 42px; border-radius: 12px; background: #e0f2fe; }
+        .s3-kpi.k1 .s3-kico { background: #00e5ff; }
+        .s3-kpi .s3-kbar { position: absolute; left: 0; bottom: 0; height: 5px; width: 100%; background: linear-gradient(90deg,#00e5ff,#3b82f6); opacity: .85; transform: scaleX(0); transform-origin: 0 50%; }
+
+        /* linha do tempo (real) */
+        #s3-timeline { margin-top: 26px; border: 1px solid #e2e8f0; border-radius: 14px; background: #f8fafc; padding: 20px 24px; opacity: 0; }
+        #s3-timeline small { font-size: 19px; letter-spacing: .14em; color: #4f46e5; font-weight: 700; text-transform: uppercase; }
+        #s3-timeline h3 { margin: 4px 0 14px; font-size: 30px; }
+        .s3-trow { display: flex; align-items: center; gap: 14px; padding: 10px 0 0; }
+        .s3-trow i { width: 34px; height: 34px; border-radius: 9px; background: #e0e7ff; flex: 0 0 34px; }
+        .s3-trow b { font-size: 24px; font-weight: 600; }
+        .s3-trow span { color: #64748b; font-size: 20px; }
+
+        /* Kanban */
+        /* header-strip das vistas (Kanban + Tabela) */
+        #s3-main .kh { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+        #s3-main .kh .chip { background: rgba(15,23,42,.06); border-radius: 999px; padding: 6px 14px; font-size: 20px; color: #475569; }
+        #s3-main .kh .chip i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #22c55e; margin-right: 8px; }
+        #s3-main .kh .tab { border-radius: 9px; padding: 6px 14px; font-size: 20px; color: #475569; border: 1px solid #e2e8f0; }
+        #s3-main .kh .tab.is-on { background: #0f172a; color: #f8fafc; }
+        #s3-main .kh .demo { margin-left: auto; background: #fff7ed; color: #9a3412; font-weight: 600; border-radius: 999px; padding: 6px 14px; font-size: 19px; }
+        #s3p-board { position: relative; height: 640px; }
+        .s3-col { position: absolute; top: 0; width: 274px; height: 640px; border-radius: 14px; background: #f1f5f9; padding: 14px; }
+        .s3-col h4 { display: flex; align-items: center; gap: 10px; font-size: 23px; color: #475569; margin: 2px 6px 14px; font-weight: 600; }
+        .s3-col h4 i { width: 10px; height: 10px; border-radius: 50%; background: #94a3b8; }
+        .s3-col.c-ver h4 i { background: #f59e0b; }
+        .s3-col.c-aper h4 i { background: #16a34a; }
+        .s3-col.c-pago h4 i { background: #3b82f6; }
+        .s3-cnt { margin-left: auto; background: #e2e8f0; color: #475569; border-radius: 999px; min-width: 34px; height: 30px; line-height: 30px; text-align: center; font-size: 19px; font-weight: 700; padding: 0 6px; }
+        #s3p-card {
+          position: absolute; left: 15px; top: 92px; width: 244px; height: 148px;
+          background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid #94a3b8;
+          border-radius: 12px; padding: 14px 16px; box-shadow: 0 10px 24px rgba(15,23,42,.08);
+          z-index: 5;
+        }
+        #s3p-card.sw-ap { border-left-color: #16a34a; }
+        #s3p-card.sw-vr { border-left-color: #f59e0b; }
+        #s3p-card b { font-family: 'Space Grotesk', sans-serif; font-size: 27px; display: block; }
+        #s3p-card span { display: block; color: #475569; font-size: 22px; margin: 3px 0 8px; }
+        #s3p-card u { text-decoration: none; display: flex; gap: 8px; align-items: center; }
+        #s3p-card .st { border-radius: 7px; background: #e2e8f0; color: #334155; font-size: 18px; padding: 3px 9px; font-weight: 600; }
+        #s3p-card .st.f-ap { background: #dcfce7; color: #15803d; }
+        #s3p-card .st.f-vr { background: #fef3c7; color: #92400e; }
+        #s3p-card .st.f-pe { background: #e2e8f0; color: #334155; }
+        .s3-mini { position: absolute; left: 14px; right: 14px; bottom: 14px; background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #16a34a; border-radius: 10px; padding: 12px 14px; }
+        .s3-mini b { font-family: 'Space Grotesk', sans-serif; font-size: 24px; display: block; }
+        .s3-mini span { color: #475569; font-size: 20px; }
+        .s3-mini u { text-decoration: none; display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+        .s3-mini .st.f-ap { background: #dcfce7; color: #15803d; font-size: 18px; padding: 3px 9px; border-radius: 7px; font-weight: 600; }
+        .mini { color: #64748b; font-size: 19px; font-weight: 500; }
+        /* documento PDF */
+        #s3-doc {
+          position: absolute; right: 66px; top: 96px; width: 470px; height: 664px;
+          background: #ffffff; border-radius: 8px; border: 1px solid #dbe2ea;
+          box-shadow: 0 34px 80px rgba(15,23,42,.28);
+          overflow: hidden; opacity: 0; z-index: 30;
+        }
+        #s3-doc .d-head { background: #0f172a; color: #f8fafc; padding: 20px 24px; display: flex; align-items: center; gap: 14px; }
+        #s3-doc .d-head img { width: 40px; height: 40px; border-radius: 10px; }
+        #s3-doc .d-head b { font-family: 'Space Grotesk', sans-serif; font-size: 27px; }
+        #s3-doc .d-head em { display: block; font-style: normal; color: #00e5ff; font-size: 19px; letter-spacing: .12em; text-transform: uppercase; }
+        #s3-doc .d-body { padding: 22px 26px; }
+        #s3-doc .d-l { display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding: 9px 0; font-size: 22px; color: #334155; }
+        #s3-doc .d-l b { color: #0f172a; font-weight: 600; }
+        #s3-doc .d-iban { margin-top: 18px; border: 2px dashed #00b8cc; background: #ecfeff; border-radius: 12px; padding: 14px 18px; font-size: 22px; letter-spacing: .06em; color: #0e7490; font-weight: 600; }
+        #s3-doc .d-ibnote { margin-top: 10px; color: #64748b; font-size: 19px; }
+        #s3-doc .d-foot { position: absolute; left: 26px; right: 26px; bottom: 22px; color: #94a3b8; font-size: 19px; border-top: 1px solid #e2e8f0; padding-top: 12px; display: flex; justify-content: space-between; }
+
+        /* tabela */
+        #s3p-tabla .row-like { display: grid; grid-template-columns: 150px 1.1fr 1.2fr 1fr 150px; gap: 14px; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+        #s3p-tabla .row-like b { font-size: 24px; }
+        #s3p-tabla .cell { color: #475569; font-size: 22px; }
+        #s3p-tabla .st-ch { border-radius: 8px; background: #dcfce7; color: #15803d; justify-self: start; font-size: 19px; padding: 4px 10px; font-weight: 600; }
+
+        /* relatórios */
+        #s3p-rep .meta-strip { border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 14px; padding: 22px 26px; margin-top: 10px; }
+        #s3p-rep .meta-top { display: flex; align-items: baseline; gap: 16px; }
+        #s3p-rep .meta-top strong { font-size: 28px; }
+        #s3p-rep .meta-top span { color: #64748b; font-size: 24px; }
+        #s3p-rep .demo-mini { margin-left: auto; background: #fff7ed; color: #9a3412; font-weight: 600; border-radius: 999px; padding: 4px 12px; font-size: 19px; }
+        #s3p-rep .meta-barwrap { display: flex; align-items: center; gap: 16px; margin-top: 16px; }
+        #s3p-rep .meta-bar { position: relative; flex: 1; height: 30px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+        #s3p-rep .meta-fill { position: absolute; inset: 0; width: 100%; border-radius: 999px; background: linear-gradient(90deg,#00e5ff,#3b82f6); transform: scaleX(0); transform-origin: 0 50%; }
+        #s3p-rep .meta-pct { font-family: 'Space Grotesk', sans-serif; font-size: 40px; font-weight: 700; color: #0f172a; }
+        #s3p-rep .report-grid { display: flex; gap: 16px; margin-top: 22px; }
+        #s3p-rep .rk { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 18px; }
+        #s3p-rep .rk span { display: block; color: #64748b; font-size: 21px; margin-bottom: 4px; }
+        #s3p-rep .rk b { font-family: 'Space Grotesk', sans-serif; font-size: 34px; }
+
+        /* ===== overlays ===== */
+        #s3-titlecard { position: absolute; inset: 0; display: grid; place-items: center; z-index: 60; opacity: 0; }
+        #s3-titlecard .t-scrim { position: absolute; inset: 0; background: rgba(15, 23, 42, .68); }
+        #s3-titlecard .t-txt {
+          position: relative; text-align: center;
+          font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+          font-size: 116px; letter-spacing: -0.02em; color: #ffffff;
+        }
+        #s3-titlecard .t-txt span { color: #00e5ff; }
+
+        #s3-cursor { position: absolute; left: 0; top: 0; z-index: 80; opacity: 0; will-change: transform; }
+        #s3-cursor svg { display: block; }
+        .s3-ring { position: absolute; left: 0; top: 0; width: 34px; height: 34px; margin: -17px 0 0 -17px; border: 3px solid #00e5ff; border-radius: 50%; opacity: 0; z-index: 79; }
+
+        #s3-phone {
+          position: absolute; right: 64px; top: 148px; width: 300px; height: 622px;
+          background: #030912; border: 3px solid #1e293b;
+          border-radius: 42px; overflow: hidden; z-index: 40;
+        }
+        #s3-phone .scr { position: absolute; inset: 5px; border-radius: 36px; background: #0b1220; }
+        #s3-phone .notch { position: absolute; top: 12px; left: 50%; width: 84px; height: 19px; margin-left: -42px; border-radius: 999px; background: #030912; z-index: 3; }
+        #s3-phone-clk { position: absolute; top: 66px; left: 0; right: 0; text-align: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 46px; color: #f8fafc; }
+        #s3-phone-push {
+          position: absolute; left: 13px; right: 13px; top: -170px;
+          background: rgba(23,37,63,.95); border: 1px solid rgba(148,163,184,.25);
+          border-radius: 18px; padding: 14px 16px 16px;
+        }
+        #s3-phone-push .pr { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        #s3-phone-push .pd { width: 10px; height: 10px; border-radius: 50%; background: #00e5ff; }
+        #s3-phone-push .pa { color: #94a3b8; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; }
+        #s3-phone-push .pt { font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: #f8fafc; font-size: 23px; margin: 0 0 4px; }
+        #s3-phone-push .pb { color: #cbd5e1; font-size: 19px; line-height: 1.3; }
+      </style>
+
+      <div data-hf-id="hf-43u6" id="root" data-composition-id="s3_portal" data-duration="26" data-fps="30">
+        <!-- janela com painel -->
+        <div data-hf-id="hf-nckq" id="s3-win">
+          <div data-hf-id="hf-ib67" id="s3-bar">
+            <span data-hf-id="hf-emr9" class="s3-dot"></span><span data-hf-id="hf-4h6s" class="s3-dot" style="margin-right:2px"></span><span data-hf-id="hf-rieh" class="s3-dot"></span>
+            <div data-hf-id="hf-9h0c" id="s3-url">https://<b data-hf-id="hf-7azg">cftec.vercel.app/admin</b></div>
+          </div>
+          <div data-hf-id="hf-42k1" id="s3-side">
+            <div data-hf-id="hf-233t" class="brandrow">
+              <img data-hf-id="hf-nj0q" src="assets/cftec-icon.svg" alt="CFTEC" />
+              <span data-hf-id="hf-dq20">CFTEC<small data-hf-id="hf-x1im">Painel Admin</small></span>
+            </div>
+            <div data-hf-id="hf-npq2" class="s3-nav">
+              <div data-hf-id="hf-cqu8" class="slabel">Workspace</div>
+              <div data-hf-id="hf-294f" id="s3-item-dash" class="s3-item is-act"><i data-hf-id="hf-wt6k"></i>Visão Geral</div>
+              <div data-hf-id="hf-6xrs" id="s3-item-soft" class="s3-item"><i data-hf-id="hf-zeb8"></i>Softwares &amp; Downloads</div>
+              <div data-hf-id="hf-g6y7" id="s3-item-lic" class="s3-item"><i data-hf-id="hf-y7e5"></i>Licenças PalancaSoft</div>
+              <div data-hf-id="hf-wwc1" id="s3-item-pedidos" class="s3-item"><i data-hf-id="hf-ylp6"></i>Pedidos de Licença<span data-hf-id="hf-g4q7" class="s3-badge" id="s3-badge">2</span></div>
+              <div data-hf-id="hf-wu40" id="s3-item-rel" class="s3-item"><i data-hf-id="hf-0l8b"></i>Relatórios &amp; Metas</div>
+              <div data-hf-id="hf-0r1k" class="slabel" style="margin-top:8px">Equipa</div>
+              <div data-hf-id="hf-c55y" id="s3-item-cha" class="s3-item"><i data-hf-id="hf-0zjc"></i>Chamados de Suporte</div>
+              <div data-hf-id="hf-6hgz" id="s3-item-wik" class="s3-item"><i data-hf-id="hf-zsm9"></i>Wiki Técnica</div>
+            </div>
+            <div data-hf-id="hf-2jo4" id="s3-ajuda"><b data-hf-id="hf-p0h9">Precisa de ajuda?</b>❓ Guia de Uso reabre o tour a qualquer momento.</div>
+          </div>
+
+          <div data-hf-id="hf-jg8f" id="s3-main">
+            <!-- vista 1: dashboard -->
+            <div data-hf-id="hf-4h7p" class="s3-view" id="s3p-dash" style="opacity:1">
+              <div data-hf-id="hf-kf80" class="sv-kicker">Workspace</div>
+              <div data-hf-id="hf-x7wc" class="sv-h1">Visão Geral</div>
+              <div data-hf-id="hf-uqdm" class="s3-kpis">
+                <div data-hf-id="hf-4qjp" class="s3-kpi k1" id="s3-kpi1"><small data-hf-id="hf-62ki">Pedidos de Licença</small><strong data-hf-id="hf-fsx4">2</strong><em data-hf-id="hf-5927">0 pendente(s) · 2 aprovado(s)</em><span data-hf-id="hf-34by" class="s3-kico"></span><span data-hf-id="hf-p27u" class="s3-kbar"></span></div>
+                <div data-hf-id="hf-pmw4" class="s3-kpi" id="s3-kpi2"><small data-hf-id="hf-ew9e">Contactos</small><strong data-hf-id="hf-em01">1</strong><em data-hf-id="hf-174f">0 novo(s) por ler</em><span data-hf-id="hf-qbhu" class="s3-kico"></span><span data-hf-id="hf-11y6" class="s3-kbar"></span></div>
+                <div data-hf-id="hf-qejx" class="s3-kpi" id="s3-kpi3"><small data-hf-id="hf-boae">Softwares</small><strong data-hf-id="hf-df2y">4</strong><em data-hf-id="hf-tctv">16 download(s) · 30 dias</em><span data-hf-id="hf-qpsv" class="s3-kico"></span><span data-hf-id="hf-1g97" class="s3-kbar"></span></div>
+                <div data-hf-id="hf-969m" class="s3-kpi" id="s3-kpi4"><small data-hf-id="hf-mzyk">Licenças</small><strong data-hf-id="hf-f0b2">0</strong><em data-hf-id="hf-j3pz">0 activa(s)</em><span data-hf-id="hf-r43w" class="s3-kico"></span><span data-hf-id="hf-1uk8" class="s3-kbar"></span></div>
+              </div>
+              <div data-hf-id="hf-3ikp" id="s3-timeline">
+                <small data-hf-id="hf-2f9e">Linha do tempo</small>
+                <h3 data-hf-id="hf-uzby">Actividade do workspace</h3>
+                <div data-hf-id="hf-rhdr" class="s3-trow"><i data-hf-id="hf-06xa"></i><b data-hf-id="hf-qcw4">Pedido de licença · Nexora Systems</b><span data-hf-id="hf-olvw">CFTEC Flow · Multicaixa Express</span></div>
+                <div data-hf-id="hf-qjen" class="s3-trow"><i data-hf-id="hf-26gf"></i><b data-hf-id="hf-03g1">Chamado · Telsio Corp</b><span data-hf-id="hf-8z8z">Negomil (AGT) · Resolvido</span></div>
+              </div>
+            </div>
+
+            <!-- vista 2: kanban -->
+            <div data-hf-id="hf-ttuk" class="s3-view" id="s3p-kanban">
+              <div data-hf-id="hf-lfx1" class="sv-kicker">Checkout B2B</div>
+              <div data-hf-id="hf-utle" class="sv-h1" style="margin-bottom:10px">Pedidos de licença</div>
+              <div data-hf-id="hf-ycb5" class="kh">
+                <span data-hf-id="hf-r962" class="chip"><i data-hf-id="hf-2krg"></i>tempo real · 20 s</span>
+                <span data-hf-id="hf-s6b7" class="tab is-on">Kanban</span>
+                <span data-hf-id="hf-9jua" class="tab" id="s3-tab-tabla">Tabela</span>
+                <span data-hf-id="hf-qccg" class="demo">Demonstração</span>
+              </div>
+              <div data-hf-id="hf-4ndf" id="s3p-board" data-layout-allow-overflow data-layout-allow-overlap>
+                <div data-hf-id="hf-oycu" class="s3-col" style="left:15px"><h4 data-hf-id="hf-crso"><i data-hf-id="hf-oz7w"></i>Pendente<span data-hf-id="hf-5rvg" class="s3-cnt" id="s3-cnt-pe">1</span></h4></div>
+                <div data-hf-id="hf-x15i" class="s3-col c-ver" style="left:304px"><h4 data-hf-id="hf-78sn"><i data-hf-id="hf-okwv"></i>Em Verificação<span data-hf-id="hf-gt7k" class="s3-cnt" id="s3-cnt-vr">0</span></h4></div>
+                <div data-hf-id="hf-4eyp" class="s3-col c-aper" style="left:593px"><h4 data-hf-id="hf-208f"><i data-hf-id="hf-o6lu"></i>Aprovado<span data-hf-id="hf-z2jq" class="s3-cnt" id="s3-cnt-ap">1</span></h4>
+                  <div data-hf-id="hf-qeyq" class="s3-mini">
+                    <b data-hf-id="hf-34dm">Nexora POS</b>
+                    <span data-hf-id="hf-5i9u">Nexora Systems</span>
+                    <u data-hf-id="hf-w5wo"><span data-hf-id="hf-53ye" class="st f-ap">Aprovado</span><span data-hf-id="hf-v07d" class="mini">Transferência / IBAN</span></u>
+                  </div>
+                </div>
+                <div data-hf-id="hf-kmfh" class="s3-col c-pago" style="left:882px"><h4 data-hf-id="hf-6eyk"><i data-hf-id="hf-jqbp"></i>Pago<span data-hf-id="hf-48hh" class="s3-cnt" id="s3-cnt-pg">0</span></h4></div>
+                <div data-hf-id="hf-o9js" id="s3p-card" class="sw-pe" data-layout-allow-overflow>
+                  <b data-hf-id="hf-4iqk">CFTEC Flow</b>
+                  <span data-hf-id="hf-sffq">Nexora Systems</span>
+                  <u data-hf-id="hf-0jxc"><span data-hf-id="hf-4wc6" class="st f-pe" id="s3-card-st">Pendente</span><span data-hf-id="hf-42kj" class="mini">Multicaixa Express</span></u>
+                </div>
+              </div>
+            </div>
+
+            <!-- vista 3: tabela -->
+            <div data-hf-id="hf-8qhn" class="s3-view" id="s3p-tabla">
+              <div data-hf-id="hf-lv61" class="sv-kicker">Checkout B2B</div>
+              <div data-hf-id="hf-kdam" class="sv-h1" style="margin-bottom:14px">Pedidos de licença</div>
+              <div data-hf-id="hf-u4ro" class="kh" style="margin-bottom:18px">
+                <span data-hf-id="hf-myum" class="chip"><i data-hf-id="hf-each" id="s3-dot2"></i>tempo real · 20 s</span>
+                <span data-hf-id="hf-9zq1" class="tab">Kanban</span>
+                <span data-hf-id="hf-jln4" class="tab is-on" id="s3-tab-t2">Tabela</span>
+                <span data-hf-id="hf-herc" class="demo">Demonstração</span>
+              </div>
+              <div data-hf-id="hf-dd4w" class="row-like">
+                <span data-hf-id="hf-ii0u" class="st-ch">Aprovado</span>
+                <b data-hf-id="hf-hfis">CFTEC Flow</b><span data-hf-id="hf-jw72" class="cell">Nexora Systems · 010252334BO042</span><span data-hf-id="hf-1n9a" class="cell">Multicaixa Express</span>
+              </div>
+              <div data-hf-id="hf-vfso" class="row-like">
+                <span data-hf-id="hf-34wy" class="st-ch">Aprovado</span>
+                <b data-hf-id="hf-lbxq">Nexora POS</b><span data-hf-id="hf-ji5e" class="cell">Nexora Systems · 010252334BO042</span><span data-hf-id="hf-qbdb" class="cell">Transferência Bancária / IBAN</span>
+              </div>
+              <div data-hf-id="hf-ersr" style="color:#64748b;font-size:20px;margin-top:10px">Fatura interna (FT) em PDF emite-se no estado «Pago» — automático pelo painel.</div>
+            </div>
+
+            <!-- vista 4: relatórios -->
+            <div data-hf-id="hf-17fm" class="s3-view" id="s3p-rep">
+              <div data-hf-id="hf-h2h2" class="sv-kicker">Comercial — Métricas</div>
+              <div data-hf-id="hf-tj4i" class="sv-h1" style="margin-bottom:10px">Relatórios de vendas</div>
+              <div data-hf-id="hf-fw6i" class="meta-strip">
+                <div data-hf-id="hf-u6ex" class="meta-top">
+                  <strong data-hf-id="hf-83qk">🎯 Meta mensal</strong>
+                  <span data-hf-id="hf-qtdu" id="s3-rep-linha">812.500 Kz de <b data-hf-id="hf-dg5f" style="font-weight:700">2.500.000 Kz</b> · Outubro</span>
+                  <span data-hf-id="hf-8i36" class="demo-mini">dados ilustrativos</span>
+                </div>
+                <div data-hf-id="hf-fsl3" class="meta-barwrap">
+                  <div data-hf-id="hf-np0v" class="meta-bar"><div data-hf-id="hf-qlh7" class="meta-fill" id="s3-meta-fill"></div></div>
+                  <span data-hf-id="hf-3dfx" class="meta-pct" id="s3-meta-pct" data-layout-allow-overlap>0%</span>
+                </div>
+              </div>
+              <div data-hf-id="hf-9sff" class="report-grid">
+                <div data-hf-id="hf-s0nh" class="rk"><span data-hf-id="hf-mqf9">Pedidos totais</span><b data-hf-id="hf-rxpx">2</b></div>
+                <div data-hf-id="hf-wmm9" class="rk"><span data-hf-id="hf-c3fo">Taxa de conversão</span><b data-hf-id="hf-gd43">—</b></div>
+                <div data-hf-id="hf-xtjc" class="rk"><span data-hf-id="hf-hjmo">Notify email</span><b data-hf-id="hf-todj" style="font-size:22px;color:#16a34a">on</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- overlays fora da janela -->
+        <div data-hf-id="hf-x9o0" id="s3-titlecard" data-layout-allow-overlap>
+          <div data-hf-id="hf-q11h" class="t-scrim"></div>
+          <div data-hf-id="hf-xufl" class="t-txt">Portal <span data-hf-id="hf-zk80">CFTEC</span></div>
+        </div>
+        <div data-hf-id="hf-xmsm" id="s3-cursor">
+          <svg data-hf-id="hf-8442" width="54" height="66" viewBox="0 0 54 66" fill="none">
+            <path data-hf-id="hf-5ghs" d="M6 4 L42 34 L26 37 L34 60 L26 64 L18 42 L6 50 Z" fill="#ffffff" stroke="#0369a1" stroke-width="2.5" linejoin="round" />
+          </svg>
+        </div>
+        <div data-hf-id="hf-vti1" class="s3-ring" id="s3-ring1"></div>
+        <div data-hf-id="hf-zrm2" class="s3-ring" id="s3-ring2"></div>
+        <div data-hf-id="hf-8c98" id="s3-doc" data-layout-allow-occlusion>
+          <div data-hf-id="hf-6g17" class="d-head"><img data-hf-id="hf-k8um" src="assets/cftec-icon.svg" alt="CFTEC" /><div data-hf-id="hf-yeow"><b data-hf-id="hf-fjlm">CFTEC — Serviços de tecnologia</b><em data-hf-id="hf-mhaw">Fatura Proforma</em></div></div>
+          <div data-hf-id="hf-6fb5" class="d-body">
+            <div data-hf-id="hf-wr5r" class="d-l"><b data-hf-id="hf-ol29">Cliente</b><span data-hf-id="hf-stqr">Nexora Systems</span></div>
+            <div data-hf-id="hf-x9j3" class="d-l"><b data-hf-id="hf-i4fe">NIF</b><span data-hf-id="hf-64d2">010252334BO042</span></div>
+            <div data-hf-id="hf-wv82" class="d-l"><b data-hf-id="hf-3zio">Software</b><span data-hf-id="hf-ndmy">CFTEC Flow v2.4</span></div>
+            <div data-hf-id="hf-wgx1" class="d-l"><b data-hf-id="hf-1kzr">Pagamento</b><span data-hf-id="hf-duse">Multicaixa Express</span></div>
+            <div data-hf-id="hf-c0a9" class="d-iban">AO06.0040.0000.1111.2222.3333.4</div>
+            <div data-hf-id="hf-0697" class="d-ibnote">Mostrado na confirmação dos pedidos de licença (checkout B2B).</div>
+          </div>
+          <div data-hf-id="hf-66xd" class="d-foot"><span data-hf-id="hf-hzby">CFTEC · Luanda, Angola</span><span data-hf-id="hf-8dyf">PDF · 1 página</span></div>
+        </div>
+        <div data-hf-id="hf-q989" id="s3-phone" data-layout-allow-overflow>
+          <div data-hf-id="hf-zn7g" class="scr">
+            <div data-hf-id="hf-66v6" id="s3-phone-clk">08:47</div>
+            <div data-hf-id="hf-ou9h" id="s3-phone-push">
+              <div data-hf-id="hf-ag0a" class="pr"><span data-hf-id="hf-7feh" class="pd"></span><span data-hf-id="hf-z7dm" class="pa">CFTEC · agora</span></div>
+              <p data-hf-id="hf-n01l" class="pt">🛠️ Novo chamado de suporte</p>
+              <p data-hf-id="hf-vfd5" class="pb">Telsio Corp pediu apoio (Negomil (AGT)) — verifique no painel.</p>
+            </div>
+          </div>
+          <div data-hf-id="hf-8kjy" class="notch"></div>
+        </div>
+      </div>
+
+      <script>
+        (function () {
+          var tl = gsap.timeline({ paused: true });
+          var IN = 'power3.out';
+
+          /* helpers de estado (callbacks determinísticos da timeline) */
+          function q(sel) { return document.querySelector(sel) }
+          function setCnt(sel, v) { var el = q(sel); if (el) el.textContent = v }
+          function setSt(cls, txt) { var el = q('#s3-card-st'); if (el) { el.textContent = txt; el.className = 'st ' + cls } }
+          function setCard(cls) { var el = q('#s3p-card'); if (el) el.className = cls }
+
+          /* estado inicial */
+          gsap.set('.s3-view', { autoAlpha: 0, y: 20 });
+          gsap.set('#s3p-dash', { autoAlpha: 1, y: 0 });
+          gsap.set('#s3-win', { autoAlpha: 0, y: 44, scale: 0.97 });
+          gsap.set('#s3-titlecard', { autoAlpha: 0 });
+          gsap.set('#s3-doc', { autoAlpha: 0, y: 60, scale: 0.9, transformOrigin: '60% 40%' });
+          gsap.set('#s3p-card', { x: 0 });
+          gsap.set('#s3-phone', { x: 460 });
+                    gsap.set('#s3-phone-push', { y: -500 });
+          gsap.set('#s3-meta-fill', { scaleX: 0 });
+          gsap.set('#s3-meta-pct', { autoAlpha: 0, scale: 0.7, transformOrigin: '50% 50%' });
+          gsap.set('#s3-badge', { scale: 0.5, transformOrigin: '50% 50%' });
+          gsap.set('#s3-cursor', { autoAlpha: 0 });
+          gsap.set('.s3-ring', { autoAlpha: 0, scale: 0.2, transformOrigin: '50% 50%' });
+
+          /* 0–0,9: janela assenta */
+          tl.to('#s3-win', { autoAlpha: 1, y: 0, scale: 1, duration: 0.9, ease: IN }, 0);
+
+          /* 0,3–2,2: titlecard */
+          tl.to('#s3-titlecard', { autoAlpha: 1, duration: 0.25, ease: 'power2.out' }, 0.35);
+          tl.to('#s3-titlecard .t-txt', { scale: 1.06, transformOrigin: '50% 50%', duration: 1.4, ease: 'power1.out' }, 0.35);
+          tl.to('#s3-titlecard', { autoAlpha: 0, duration: 0.32, ease: 'power2.in' }, 1.9);
+
+          /* 1,0–3,3: KPIs aterram + contam */
+          ['#s3-kpi1', '#s3-kpi2', '#s3-kpi3', '#s3-kpi4'].forEach(function (id, n) {
+            var st = 1.0 + n * 0.16;
+            tl.to(id, { autoAlpha: 1, y: 0, duration: 0.3, ease: 'power2.out' }, st);
+            tl.to(id + ' .s3-kbar', { scaleX: 1, duration: 0.5, ease: 'power2.out' }, st + 0.08);
+          });
+          tl.to('#s3-timeline', { autoAlpha: 1, y: 0, duration: 0.35, ease: 'power2.out' }, 2.05);
+
+          /* 3,0–4,2: cursor entra e clica «Pedidos de Licença» */
+          gsap.set('#s3-cursor', { x: -80, y: 920 });
+          tl.to('#s3-cursor', { autoAlpha: 1, duration: 0.15 }, 2.9);
+          tl.to('#s3-cursor', { x: 430, y: 690, duration: 0.55, ease: IN }, 3.0);   // meio do caminho
+          tl.to('#s3-cursor', { x: 300, y: 398, duration: 0.45, ease: IN }, 3.55);  // item «Pedidos de Licença»
+          /* clique */
+          tl.to('#s3-cursor', { scale: 0.86, transformOrigin: '0% 0%', duration: 0.08, ease: 'power2.out' }, 4.02);
+          tl.to('#s3-cursor', { scale: 1, duration: 0.1, ease: 'power2.out' }, 4.12);
+          gsap.set('#s3-ring1', { x: 313, y: 411 });
+          gsap.set('#s3-ring2', { x: 313, y: 411 });
+          tl.to('#s3-ring1', { autoAlpha: 0.9, scale: 1, duration: 0.16, ease: 'power1.out' }, 4.05);
+          tl.to('#s3-ring1', { autoAlpha: 0, scale: 1.9, duration: 0.22, ease: 'power2.out' }, 4.22);
+          tl.to('#s3-ring2', { autoAlpha: 0.7, scale: 1, duration: 0.16, ease: 'power1.out' }, 4.13);
+          tl.to('#s3-ring2', { autoAlpha: 0, scale: 2.6, duration: 0.28, ease: 'power2.out' }, 4.3);
+          /* item de nav activo + badge pop */
+          tl.to('#s3-item-pedidos', { backgroundColor: '#10233f', color: '#00e5ff', duration: 0.2 }, 4.04);
+          tl.to('#s3-item-dash', { backgroundColor: 'transparent', color: '#94a3b8', duration: 0.2 }, 4.04);
+          tl.to('#s3-badge', { autoAlpha: 1, scale: 1, duration: 0.28, ease: 'back.out(2.2)' }, 4.1);
+
+          /* 4,2–4,7: dashboard → kanban */
+          tl.to('#s3p-dash', { autoAlpha: 0, y: -14, duration: 0.3, ease: 'power2.in' }, 4.25);
+          tl.to('#s3p-kanban', { autoAlpha: 1, y: 0, duration: 0.35, ease: IN }, 4.45);
+
+          /* ——— DRAG 1 · Pendente → Em Verificação (4,9–6,2) ——— */
+          tl.to('#s3-cursor', { x: 628, y: 420, duration: 0.55, ease: IN }, 4.7);
+          tl.to('#s3-cursor', { scale: 0.82, transformOrigin: '0% 0%', duration: 0.1, ease: 'power2.out' }, 5.28);
+          tl.to('#s3p-card', { scale: 1.05, boxShadow: '0 24px 48px rgba(15,23,42,.20)', duration: 0.14, ease: 'power2.out' }, 5.3);
+          tl.to('#s3-cursor', { x: 912, y: 412, duration: 0.5, ease: 'power1.inOut' }, 5.55);
+          tl.to('#s3p-card', { x: 304, duration: 0.5, ease: 'power2.inOut' }, 5.55);
+          tl.to('#s3p-card', { scale: 1, boxShadow: '0 10px 24px rgba(15,23,42,.08)', duration: 0.16, ease: 'power2.out' }, 6.0);
+          tl.to('#s3-cursor', { scale: 1, duration: 0.1, ease: 'power2.out' }, 6.0);
+          tl.to('#s3p-card', { borderLeftColor: '#f59e0b', duration: 0.15, ease: 'none' }, 6.0);
+          /* estado: Em Verificação (contagem 1/0 → 0/1, chip do cartão) */
+          tl.add(function () { setCnt('#s3-cnt-pe', '0'); setCnt('#s3-cnt-vr', '1'); setSt('f-vr', 'Em Verificação'); setCard('sw-vr'); }, 6.08);
+          /* anel de solta */
+          tl.set('#s3-ring1', { x: 925, y: 425, scale: 0.2 }, 6.01);
+          tl.set('#s3-ring2', { x: 925, y: 425, scale: 0.2 }, 6.01);
+          tl.to('#s3-ring1', { autoAlpha: 0.9, scale: 1, duration: 0.16, ease: 'power1.out' }, 6.03);
+          tl.to('#s3-ring1', { autoAlpha: 0, scale: 1.9, duration: 0.24, ease: 'power2.out' }, 6.19);
+          tl.to('#s3-ring2', { autoAlpha: 0.7, scale: 1, duration: 0.16, ease: 'power1.out' }, 6.11);
+          tl.to('#s3-ring2', { autoAlpha: 0, scale: 2.6, duration: 0.3, ease: 'power2.out' }, 6.27);
+
+          /* ——— DRAG 2 · Em Verificação → Aprovado (6,9–8,2) ——— */
+          tl.to('#s3-cursor', { x: 931, y: 420, duration: 0.25, ease: 'power1.out' }, 6.9);
+          tl.to('#s3-cursor', { scale: 0.82, duration: 0.1, ease: 'power2.out' }, 7.3);
+          tl.to('#s3p-card', { scale: 1.05, boxShadow: '0 24px 48px rgba(15,23,42,.20)', duration: 0.14, ease: 'power2.out' }, 7.3);
+          tl.to('#s3-cursor', { x: 1201, y: 412, duration: 0.5, ease: 'power1.inOut' }, 7.4);
+          tl.to('#s3p-card', { x: 593, duration: 0.5, ease: 'power2.inOut' }, 7.4);
+          tl.to('#s3p-card', { scale: 1, boxShadow: '0 10px 24px rgba(15,23,42,.08)', duration: 0.16, ease: 'power2.out' }, 7.9);
+          tl.to('#s3-cursor', { scale: 1, duration: 0.1, ease: 'power2.out' }, 7.9);
+          tl.to('#s3p-card', { borderLeftColor: '#16a34a', duration: 0.15, ease: 'none' }, 7.85);
+          /* estado: Aprovado (contagem 0/1 → 0/2, chip verde, badge do nav pulsa) */
+          tl.add(function () { setCnt('#s3-cnt-vr', '0'); setCnt('#s3-cnt-ap', '2'); setSt('f-ap', 'Aprovado'); setCard('sw-ap') }, 7.93);
+          /* cursor abandona o cartão (volta em 12,35 para o tab Tabela) */
+          tl.to('#s3-cursor', { x: 640, y: 950, duration: 0.5, ease: 'power2.out' }, 8.45);
+          tl.to('#s3-badge', { scale: 1.18, duration: 0.14, ease: 'power2.out' }, 7.95);
+          tl.to('#s3-badge', { scale: 1, duration: 0.18, ease: 'power2.out' }, 8.1);
+          /* anel de solta */
+          tl.set('#s3-ring1', { x: 1214, y: 425, scale: 0.2 }, 7.91);
+          tl.set('#s3-ring2', { x: 1214, y: 425, scale: 0.2 }, 7.91);
+          tl.to('#s3-ring1', { autoAlpha: 0.9, scale: 1, duration: 0.16, ease: 'power1.out' }, 7.93);
+          tl.to('#s3-ring1', { autoAlpha: 0, scale: 1.9, duration: 0.24, ease: 'power2.out' }, 8.09);
+          tl.to('#s3-ring2', { autoAlpha: 0.7, scale: 1, duration: 0.16, ease: 'power1.out' }, 8.01);
+          tl.to('#s3-ring2', { autoAlpha: 0, scale: 2.6, duration: 0.3, ease: 'power2.out' }, 8.17);
+
+          /* ——— documento Proforma PDF (8,6–12,7) ——— */
+          tl.to('#s3-doc', { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, ease: IN }, 8.7);
+          tl.to('#s3-doc', { scale: 1.02, duration: 0.12, ease: 'power2.out' }, 9.45);
+          tl.to('#s3-doc', { scale: 1, duration: 0.14, ease: 'power2.in' }, 9.6);
+          /* realce do IBAN real */
+          tl.fromTo('#s3-doc .d-iban',
+            { boxShadow: '0 0 0 0px rgba(0,229,255,0)' },
+            { boxShadow: '0 0 0 10px rgba(0,229,255,.28)', duration: 0.3, ease: 'power2.out' }, 9.9);
+          tl.to('#s3-doc .d-iban', { boxShadow: '0 0 0 0px rgba(0,229,255,0)', duration: 0.4, ease: 'power2.in' }, 10.25);
+          /* saída do documento */
+          tl.to('#s3-doc', { autoAlpha: 0, y: -46, scale: 0.96, duration: 0.55, ease: 'power2.in' }, 12.15);
+
+          /* ——— vista Tabela (12,4–15,3) ——— */
+          tl.to('#s3-cursor', { x: 903, y: 240, duration: 0.55, ease: IN }, 12.35);
+          tl.to('#s3-cursor', { scale: 0.86, transformOrigin: '0% 0%', duration: 0.08, ease: 'power2.out' }, 12.95);
+          tl.to('#s3-cursor', { scale: 1, duration: 0.1, ease: 'power2.out' }, 13.05);
+          tl.set('#s3-ring1', { x: 916, y: 253, scale: 0.2 }, 12.96);
+          tl.set('#s3-ring2', { x: 916, y: 253, scale: 0.2 }, 12.96);
+          tl.to('#s3-ring1', { autoAlpha: 0.9, scale: 1, duration: 0.16, ease: 'power1.out' }, 12.98);
+          tl.to('#s3-ring1', { autoAlpha: 0, scale: 1.9, duration: 0.24, ease: 'power2.out' }, 13.14);
+          tl.to('#s3-ring2', { autoAlpha: 0.7, scale: 1, duration: 0.16, ease: 'power1.out' }, 13.06);
+          tl.to('#s3-ring2', { autoAlpha: 0, scale: 2.6, duration: 0.3, ease: 'power2.out' }, 13.22);
+          tl.to('#s3p-kanban', { autoAlpha: 0, y: -12, duration: 0.3, ease: 'power2.in' }, 13.05);
+          tl.to('#s3p-tabla', { autoAlpha: 1, y: 0, duration: 0.35, ease: IN }, 13.25);
+          /* dot «tempo real · 20 s» pulsa (2 pulsos) */
+          tl.fromTo('#s3-dot2', { opacity: 0.25 }, { opacity: 1, duration: 0.16, ease: 'none' }, 13.8);
+          tl.to('#s3-dot2', { opacity: 0.25, duration: 0.16, ease: 'none' }, 14.0);
+          tl.fromTo('#s3-dot2', { opacity: 0.25 }, { opacity: 1, duration: 0.16, ease: 'none', immediateRender: false }, 14.2);
+
+          /* ——— vista Relatórios & Metas (14,6–18,5) ——— */
+          tl.to('#s3-cursor', { x: 300, y: 447, duration: 0.55, ease: IN }, 14.55);
+          tl.to('#s3-cursor', { scale: 0.86, transformOrigin: '0% 0%', duration: 0.08, ease: 'power2.out' }, 15.15);
+          tl.to('#s3-cursor', { scale: 1, duration: 0.1, ease: 'power2.out' }, 15.25);
+          tl.set('#s3-ring1', { x: 313, y: 460, scale: 0.2 }, 15.16);
+          tl.set('#s3-ring2', { x: 313, y: 460, scale: 0.2 }, 15.16);
+          tl.to('#s3-ring1', { autoAlpha: 0.9, scale: 1, duration: 0.16, ease: 'power1.out' }, 15.18);
+          tl.to('#s3-ring1', { autoAlpha: 0, scale: 1.9, duration: 0.24, ease: 'power2.out' }, 15.34);
+          tl.to('#s3-ring2', { autoAlpha: 0.7, scale: 1, duration: 0.16, ease: 'power1.out' }, 15.26);
+          tl.to('#s3-ring2', { autoAlpha: 0, scale: 2.6, duration: 0.3, ease: 'power2.out' }, 15.42);
+          /* nav muda o item activo */
+          tl.to('#s3-item-rel', { backgroundColor: '#112644', color: '#00e5ff', duration: 0.2 }, 15.2);
+          tl.to('#s3-item-pedidos', { backgroundColor: 'transparent', color: '#94a3b8', duration: 0.2 }, 15.2);
+          tl.to('#s3p-tabla', { autoAlpha: 0, y: -12, duration: 0.3, ease: 'power2.in' }, 15.35);
+          tl.to('#s3p-rep', { autoAlpha: 1, y: 0, duration: 0.35, ease: IN }, 15.55);
+          /* meta: barra 0 → 78% (ilustrativa, chip «dados ilustrativos» no frame) */
+          tl.to('#s3-meta-fill', { scaleX: 0.78, duration: 1.2, ease: 'power2.inOut' }, 16.3);
+          tl.add(function () { setCnt('#s3-meta-pct', '78%'); var ln = q('#s3-rep-linha'); if (ln) ln.innerHTML = '1.950.000 Kz de <b style="font-weight:700">2.500.000 Kz</b> \u00b7 Outubro' }, 17.5);
+          tl.fromTo('#s3-meta-pct', { autoAlpha: 0, scale: 0.7 }, { autoAlpha: 1, scale: 1, duration: 0.3, ease: 'back.out(2)' }, 17.5);
+          /* flash lima (uma vez) na aterragem da barra */
+          tl.fromTo('#s3-meta-fill',
+            { boxShadow: '0 0 0 0px rgba(184,243,124,0)' },
+            { boxShadow: '0 0 0 10px rgba(184,243,124,.45)', duration: 0.3, ease: 'power2.out' }, 17.8);
+          tl.to('#s3-meta-fill', { boxShadow: '0 0 0 0px rgba(184,243,124,0)', duration: 0.35, ease: 'power2.in' }, 18.15);
+
+          /* ——— push real de chamado no telemóvel (18,6–20,6) ——— */
+          tl.to('#s3-phone', { x: 0, duration: 0.65, ease: IN }, 18.6);
+          tl.to('#s3-phone-push', { y: 318, duration: 0.55, ease: 'back.out(1.4)' }, 19.35);
+          /* vibração curta após aterrar */
+          tl.to('#s3-phone', { x: -2, duration: 0.06, ease: 'sine.out' }, 20.15);
+          tl.to('#s3-phone', { x: 2, duration: 0.06, ease: 'sine.out' }, 20.21);
+          tl.to('#s3-phone', { x: -1, duration: 0.06, ease: 'sine.out' }, 20.27);
+          tl.to('#s3-phone', { x: 0, duration: 0.06, ease: 'sine.out' }, 20.33);
+
+          /* ——— último segundo: saída suave dos overlays (22,6–23,4) ——— */
+          tl.to('#s3-phone', { x: 460, autoAlpha: 0, duration: 0.6, ease: 'power2.in' }, 22.6);
+          tl.to('#s3-cursor', { autoAlpha: 0, duration: 0.4, ease: 'power1.out' }, 22.8);
+          /* a janela fica; o corte para s4 ocorre em 26,0 */
+
+          tl.seek(0);
+          window.__timelines['s3_portal'] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

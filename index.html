@@ -1,0 +1,105 @@
+<!doctype html>
+<!--
+  DECK CFTEC — composição bruta (slides = cenas do filme, já em português)
+  Janela: 0-42 s · s1_lock 0-4 · s2_caos 4-8 · s3_portal 8-34 · s4_fim 34-42
+  A ilha do slideshow duplica no wrapper raiz (index.html).
+-->
+<html
+  lang="pt"
+  data-composition-variables='[
+    {"id":"app_label","type":"string","label":"App label","default":"CFTEC"},
+    {"id":"push_titulo","type":"string","label":"Push (título)","default":"📋 Novo pedido de licença"},
+    {"id":"push_corpo","type":"string","label":"Push (corpo)","default":"Nexora Systems pediu CFTEC Flow — verifique no painel."},
+    {"id":"claim","type":"string","label":"Claim final","default":"Pedidos, suporte e alertas — um portal."},
+    {"id":"cta_url","type":"string","label":"CTA (URL)","default":"cftec.vercel.app/admin"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root { color-scheme: light; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #f8fafc; }
+      #root { width: 100%; height: 100%; position: relative; background: #f8fafc; }
+    </style>
+  </head>
+  <body>
+    <script type="application/hyperframes-slideshow+json">
+      {
+        "slides": [
+          { "sceneId": "s1_lock", "startTime": 0, "endTime": 4, "fragments": [3.0], "notes": "Abre no telemóvel: a 08:47 o pedido chega sem ninguém abrir um computador. Livro: foi exatamente isto hoje." },
+          { "sceneId": "s2_caos", "startTime": 4, "endTime": 8, "fragments": [7.5], "notes": "O modo antigo: WhatsApp + folhas de Excel desarrumado. O painel entra à direita e empurra o caos para fora." },
+          { "sceneId": "s3_portal", "startTime": 8, "endTime": 12, "fragments": [11.95], "notes": "Visão Geral com dados de hoje: 2 pedidos, 1 contacto, 4 chamados resolvidos, 0 pendências. O cursor vai a «Pedidos de Licença»." },
+          { "sceneId": "s3_portal", "startTime": 12, "endTime": 16.65, "fragments": [16.3], "notes": "Aprovação num arrasto: CFTEC Flow vai de Pendente a Aprovado (0/1 → 0/2). O histórico fica gravado." },
+          { "sceneId": "s3_portal", "startTime": 16.65, "endTime": 20.7, "fragments": [18.5], "notes": "O portal emite a proforma — NIF real e IBAN AO06.0040.0000.1111.2222.3333.4 realçado, pronta a imprimir." },
+          { "sceneId": "s3_portal", "startTime": 20.7, "endTime": 23.05, "fragments": [22.2], "notes": "Vista Tabela para quem gosta de listas: 2 pedidos reais em Aprovado." },
+          { "sceneId": "s3_portal", "startTime": 23.05, "endTime": 26.4, "fragments": [25.8], "notes": "Relatórios & Metas: 78% do mês — 1.950.000 Kz de 2.500.000 Kz · Outubro (etiqueta «dados ilustrativos»)." },
+          { "sceneId": "s3_portal", "startTime": 26.4, "endTime": 34, "fragments": [28.6], "notes": "O suporte segue-o: Telsio Corp pediu apoio (Negomil AGT) — o chamado chega ao telemóvel. Tudo no mesmo sítio." },
+          { "sceneId": "s4_fim", "startTime": 34, "endTime": 42, "fragments": [39.5], "notes": "Fechar no claim: «Pedidos, suporte e alertas — um portal.» CTA: cftec.vercel.app/admin. Perguntar quem quer ver o painel ao vivo." }
+        ]
+      }
+    </script>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="42"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div
+        id="s1_lock"
+        data-composition-id="s1_lock"
+        data-composition-src="compositions/s1_lock.html"
+        data-start="0"
+        data-duration="4"
+        data-label="As 8:47"
+        data-track-index="1"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+
+      <div
+        id="s2_caos"
+        data-composition-id="s2_caos"
+        data-composition-src="compositions/s2_caos.html"
+        data-start="4"
+        data-duration="4"
+        data-label="O caos de ontem"
+        data-track-index="1"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+
+      <div
+        id="s3_portal"
+        data-composition-id="s3_portal"
+        data-composition-src="compositions/s3_portal.html"
+        data-start="8"
+        data-duration="26"
+        data-label="O portal CFTEC"
+        data-track-index="1"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+
+      <div
+        id="s4_fim"
+        data-composition-id="s4_fim"
+        data-composition-src="compositions/s4_fim.html"
+        data-start="34"
+        data-duration="8"
+        data-label="Um portal"
+        data-track-index="1"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

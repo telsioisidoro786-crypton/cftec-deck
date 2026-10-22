@@ -1,0 +1,143 @@
+<!doctype html>
+<!--
+  s1_lock — HOOK (0–4,0 s): lockscreen do telemóvel em navy, o push real do
+  Portal CFTEC chega com mola e vibra duas vezes. Dados reais do payload:
+  "📋 Novo pedido de licença" / "Nexora Systems pediu CFTEC Flow — verifique no painel.")
+-->
+<html
+  lang="pt"
+  data-composition-id="s1_lock"
+  data-composition-duration="4"
+>
+  <head><meta charset="UTF-8" /><title>s1_lock</title></head>
+  <body>
+    <template>
+      <style>
+        @font-face { font-family: 'Space Grotesk'; src: url('assets/fonts/SpaceGrotesk.woff2') format('woff2'); font-weight: 300 700; font-display: block; }
+        @font-face { font-family: 'InterLocal'; src: url('assets/fonts/Inter.woff2') format('woff2'); font-weight: 300 700; font-display: block; }
+
+        #root {
+          position: absolute; inset: 0; overflow: hidden;
+          background: #0f172a;
+          font-family: 'InterLocal', Inter, system-ui, sans-serif;
+          color: #f8fafc;
+        }
+        #s1-stage { position: absolute; inset: 0; will-change: transform; }
+
+        /* telemóvel */
+        #s1-phone {
+          position: absolute; right: 300px; top: 50%;
+          width: 356px; height: 752px; margin-top: -376px;
+          border-radius: 46px;
+          background: #030912;
+          border: 3px solid #1e293b;
+          box-shadow: 0 40px 90px rgba(0,0,0,.5);
+          overflow: hidden;
+        }
+        #s1-screen {
+          position: absolute; inset: 6px; border-radius: 40px;
+          background: #0b1220; overflow: hidden;
+        }
+        #s1-notch {
+          position: absolute; top: 14px; left: 50%; width: 96px; height: 22px;
+          margin-left: -48px; border-radius: 999px; background: #030912; z-index: 3;
+        }
+        #s1-clock {
+          position: absolute; top: 84px; left: 0; right: 0; text-align: center;
+          font-family: 'Space Grotesk', Inter, sans-serif; font-weight: 700;
+          font-size: 86px; letter-spacing: -0.02em; color: #f8fafc;
+        }
+        #s1-date {
+          position: absolute; top: 186px; left: 0; right: 0; text-align: center;
+          font-size: 26px; color: #94a3b8;
+        }
+        /* notificação real */
+        #s1-push {
+          position: absolute; left: 16px; right: 16px; top: -150px;
+          background: rgba(23, 37, 63, .95);
+          border: 1px solid rgba(148,163,184,.25);
+          border-radius: 22px; padding: 18px 20px 20px;
+          box-shadow: 0 18px 40px rgba(0,0,0,.45);
+        }
+        #s1-push-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        #s1-push-dot { width: 12px; height: 12px; border-radius: 50%; background: #00e5ff; }
+        #s1-push-app { font-size: 18px; letter-spacing: .12em; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
+        #s1-push-app em { font-style: normal; letter-spacing: 0; text-transform: none; color: #7f8c9f; font-size: 16px; }
+        #s1-push-t { font-family: 'Space Grotesk', Inter, sans-serif; font-weight: 700; font-size: 30px; color: #f8fafc; margin: 0 0 6px; }
+        #s1-push-b { font-size: 28px; line-height: 1.35; color: #cbd5e1; }
+
+        /* legenda mínima à esquerda (não decorativa: o que se vê) */
+        #s1-cap {
+          position: absolute; left: 96px; top: 50%; margin-top: -40px;
+          width: 520px;
+        }
+        #s1-cap small {
+          display: block; font-size: 28px; color: #94a3b8; margin-bottom: 10px;
+        }
+        #s1-cap h2 {
+          margin: 0; font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+          font-size: 58px; line-height: 1.15; color: #f8fafc;
+        }
+        #s1-cap h2 b { color: #00e5ff; font-weight: 700; }
+      </style>
+
+      <div data-hf-id="hf-0iiz" id="root" data-composition-id="s1_lock" data-duration="4" data-fps="30">
+        <div data-hf-id="hf-frf5" id="s1-stage" data-layout-allow-overflow>
+          <div data-hf-id="hf-mnde" id="s1-phone">
+            <div data-hf-id="hf-bw9a" id="s1-screen">
+              <div data-hf-id="hf-nqpn" id="s1-clock">08:47</div>
+              <div data-hf-id="hf-g2zo" id="s1-date" data-layout-ignore>22 de Outubro</div>
+              <div data-hf-id="hf-zxjt" id="s1-push" data-layout-allow-overflow>
+                <div data-hf-id="hf-x9mp" id="s1-push-row" data-layout-allow-overlap>
+                  <span data-hf-id="hf-od2x" id="s1-push-dot"></span>
+                  <span data-hf-id="hf-e3h0" id="s1-push-app" data-var-text="app_label" data-layout-ignore>CFTEC <em data-hf-id="hf-p49s">· agora</em></span>
+                </div>
+                <p data-hf-id="hf-hu66" id="s1-push-t" data-var-text="push_titulo">📋 Novo pedido de licença</p>
+                <p data-hf-id="hf-qlr6" id="s1-push-b" data-var-text="push_corpo">Nexora Systems pediu CFTEC Flow — verifique no painel.</p>
+              </div>
+            </div>
+            <div data-hf-id="hf-cods" id="s1-notch"></div>
+          </div>
+          <div data-hf-id="hf-y8uq" id="s1-cap">
+            <small data-hf-id="hf-e48y">Quando um cliente faz um pedido no site…</small>
+            <h2 data-hf-id="hf-6hos">o aviso chega à <b data-hf-id="hf-l7s5">sua mão</b>.</h2>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (function () {
+          var tl = gsap.timeline({ paused: true });
+          var EASE_IN = 'power2.out';
+          var EASE_OUT = 'power3.out';
+
+          // cena inteira: entra na fase (o corte s2 assume o último frame)
+          gsap.set('#s1-stage', { autoAlpha: 1 });
+
+          // legenda esquerda
+          gsap.set('#s1-cap', { autoAlpha: 0, y: 26 });
+          tl.to('#s1-cap', { autoAlpha: 1, duration: 0.3, ease: EASE_IN }, 0.25);
+          tl.to('#s1-cap', { y: 0, duration: 0.45, ease: EASE_OUT }, 0.25);
+
+          // notificação: mola fechada (drop + overshoot + repouso) — via transform y
+          // CSS: top:-150 · repouso = y=+400 · a partida fica ACIMA da tela (cartão ~260px alto)
+          gsap.set('#s1-push', { y: 0 });
+          tl.fromTo('#s1-push', { y: -500 }, { y: 400, duration: 0.8, ease: 'back.out(1.15)', immediateRender: true }, 0.55);
+          // vibração (2 pulsos curtos, depois repousa)
+          tl.to('#s1-phone', { x: 2, duration: 0.06, ease: 'sine.out' }, 1.15);
+          tl.to('#s1-phone', { x: -2, duration: 0.06, ease: 'sine.out' }, 1.21);
+          tl.to('#s1-phone', { x: 2, duration: 0.06, ease: 'sine.out' }, 1.27);
+          tl.to('#s1-phone', { x: -2, duration: 0.06, ease: 'sine.out' }, 1.33);
+          tl.to('#s1-phone', { x: 1, duration: 0.06, ease: 'sine.out' }, 1.39);
+          tl.to('#s1-phone', { x: 0, duration: 0.06, ease: 'sine.out' }, 1.45);
+
+          // último 0,3 s: leve zoom do push (avanço) — o corte traz o Kanban
+          tl.to('#s1-push', { scale: 1.03, transformOrigin: '50% 50%', duration: 0.3, ease: 'power1.out' }, 3.7);
+
+          tl.seek(0);
+          window.__timelines['s1_lock'] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
